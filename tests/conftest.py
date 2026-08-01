@@ -47,5 +47,6 @@ def mock_config_entry() -> MockConfigEntry:
             "operators": ["ukrnafta", "okko"],
             "fuels": ["a95", "diesel"],
         },
+        version=1,
         unique_id=DOMAIN,
     )

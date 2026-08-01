@@ -3,27 +3,43 @@
     "step": {
       "user": {
         "title": "Ukrainian Fuel Prices",
-        "description": "Select gas station operators and fuel types for Kharkiv region (Minfin). Operator list is loaded from Minfin when available.",
+        "description": "Select gas station operators for Kharkiv region. Next you will choose fuels for each operator separately.",
         "data": {
-          "operators": "Operators",
+          "operators": "Operators"
+        }
+      },
+      "fuels": {
+        "title": "Fuels for {operator}",
+        "description": "Select which fuels to monitor for {operator}.",
+        "data": {
           "fuels": "Fuels"
         }
       }
     },
     "abort": {
-      "already_configured": "Ukrainian Fuel Prices is already configured."
+      "already_configured": "Ukrainian Fuel Prices is already configured.",
+      "no_operators": "Select at least one operator."
     }
   },
   "options": {
     "step": {
       "init": {
         "title": "Ukrainian Fuel Prices options",
-        "description": "Update monitored operators and fuel types.",
+        "description": "Select operators to monitor. Next you will choose fuels for each operator separately.",
         "data": {
-          "operators": "Operators",
+          "operators": "Operators"
+        }
+      },
+      "fuels": {
+        "title": "Fuels for {operator}",
+        "description": "Select which fuels to monitor for {operator}.",
+        "data": {
           "fuels": "Fuels"
         }
       }
+    },
+    "abort": {
+      "no_operators": "Select at least one operator."
     }
   }
 }

@@ -67,7 +67,7 @@ def parse_operators(html: str) -> dict[str, str]:
 
 
 def parse_prices(
-    html: str, selected_operators: list[str], selected_fuels: list[str]
+    html: str, selection: dict[str, list[str]]
 ) -> dict[str, float | None]:
     """Parse Minfin HTML into operator_fuel -> price mapping."""
     soup = BeautifulSoup(html, "html.parser")
@@ -75,11 +75,15 @@ def parse_prices(
     if not table:
         raise MinfinError("Не вдалося знайти таблицю цін")
 
-    selected = {op.lower() for op in selected_operators}
-    fuels = [fuel.lower() for fuel in selected_fuels]
+    normalized = {
+        op.lower(): [fuel.lower() for fuel in fuels]
+        for op, fuels in selection.items()
+    }
     # Always expose every requested sensor key, even when Minfin has no value.
     data: dict[str, float | None] = {
-        f"{op}_{fuel}": None for op in selected for fuel in fuels
+        f"{op}_{fuel}": None
+        for op, fuels in normalized.items()
+        for fuel in fuels
     }
 
     for row in table.select("tr"):
@@ -94,7 +98,7 @@ def parse_prices(
             if match_slug:
                 op_slug = match_slug.group(1).lower()
 
-        if not op_slug or op_slug not in selected:
+        if not op_slug or op_slug not in normalized:
             continue
 
         # Cells: [0] name, [1] spacer, [2] A-95+, [3] A-95, [4] A-92, [5] ДП, [6] Газ
@@ -106,7 +110,7 @@ def parse_prices(
             "gas": parse_price(cells[6].get_text()) if len(cells) > 6 else None,
         }
 
-        for fuel_key in fuels:
+        for fuel_key in normalized[op_slug]:
             data[f"{op_slug}_{fuel_key}"] = row_fuel_map.get(fuel_key)
 
     return data

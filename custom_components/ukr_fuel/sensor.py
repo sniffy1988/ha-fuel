@@ -10,6 +10,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN, FUELS, MINFIN_URL, OPERATORS
 from .coordinator import UkrFuelCoordinator
+from .selection import selection_pairs
 
 FUEL_ICONS = {
     "a95_plus": "mdi:gas-station",
@@ -28,22 +29,17 @@ async def async_setup_entry(
     """Set up Ukrainian Fuel Prices sensors from a config entry."""
     coordinator: UkrFuelCoordinator = hass.data[DOMAIN][entry.entry_id]
 
-    sensors: list[FuelSensor] = []
-    for op in coordinator.selected_operators:
-        op_name = OPERATORS.get(op, op.replace("_", " ").title())
-        for fuel in coordinator.selected_fuels:
-            if fuel not in FUELS:
-                continue
-            sensors.append(
-                FuelSensor(
-                    coordinator=coordinator,
-                    operator=op,
-                    operator_name=op_name,
-                    fuel=fuel,
-                    fuel_name=FUELS[fuel],
-                    icon=FUEL_ICONS.get(fuel, "mdi:gas-station"),
-                )
-            )
+    sensors = [
+        FuelSensor(
+            coordinator=coordinator,
+            operator=operator,
+            operator_name=OPERATORS.get(operator, operator.replace("_", " ").title()),
+            fuel=fuel,
+            fuel_name=FUELS[fuel],
+            icon=FUEL_ICONS.get(fuel, "mdi:gas-station"),
+        )
+        for operator, fuel in selection_pairs(coordinator.selection)
+    ]
 
     async_add_entities(sensors)
 

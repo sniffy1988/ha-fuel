@@ -15,7 +15,7 @@ async def test_setup_creates_sensors(
     mock_config_entry: MockConfigEntry,
     mock_minfin_html,
 ) -> None:
-    """Setup should create one sensor per operator/fuel pair."""
+    """Setup should create sensors for legacy cartesian config."""
     mock_config_entry.add_to_hass(hass)
 
     assert await hass.config_entries.async_setup(mock_config_entry.entry_id)
@@ -40,6 +40,46 @@ async def test_setup_creates_sensors(
     assert ukrnafta.attributes["unit_of_measurement"] == "грн/л"
     assert ukrnafta.attributes["operator"] == "ukrnafta"
     assert ukrnafta.attributes["fuel"] == "a95"
+
+
+async def test_setup_respects_per_operator_selection(
+    hass: HomeAssistant,
+    mock_minfin_html,
+) -> None:
+    """Only selected fuels per operator should create sensors."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Ціни на пальне (Харків)",
+        data={
+            "selection": {
+                "ukrnafta": ["a92"],
+                "socar": ["a95"],
+            }
+        },
+        version=2,
+        unique_id=DOMAIN,
+    )
+    entry.add_to_hass(hass)
+
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    registry = er.async_get(hass)
+    assert (
+        registry.async_get_entity_id("sensor", DOMAIN, "fuel_price_ukrnafta_a92")
+        is not None
+    )
+    assert (
+        registry.async_get_entity_id("sensor", DOMAIN, "fuel_price_socar_a95")
+        is not None
+    )
+    assert (
+        registry.async_get_entity_id("sensor", DOMAIN, "fuel_price_socar_a92") is None
+    )
+    assert (
+        registry.async_get_entity_id("sensor", DOMAIN, "fuel_price_ukrnafta_a95")
+        is None
+    )
 
 
 async def test_unload_entry(

@@ -22,8 +22,7 @@ class UkrFuelCoordinator(DataUpdateCoordinator[dict[str, float | None]]):
     def __init__(
         self,
         hass: HomeAssistant,
-        selected_operators: list[str],
-        selected_fuels: list[str],
+        selection: dict[str, list[str]],
     ) -> None:
         """Initialize coordinator."""
         super().__init__(
@@ -32,8 +31,7 @@ class UkrFuelCoordinator(DataUpdateCoordinator[dict[str, float | None]]):
             name=DOMAIN,
             update_interval=SCAN_INTERVAL,
         )
-        self.selected_operators = selected_operators
-        self.selected_fuels = selected_fuels
+        self.selection = selection
 
     async def _async_update_data(self) -> dict[str, float | None]:
         """Fetch and parse prices from Minfin."""
@@ -42,8 +40,7 @@ class UkrFuelCoordinator(DataUpdateCoordinator[dict[str, float | None]]):
             data = await self.hass.async_add_executor_job(
                 minfin.parse_prices,
                 html,
-                self.selected_operators,
-                self.selected_fuels,
+                self.selection,
             )
         except minfin.MinfinError as err:
             raise UpdateFailed(str(err)) from err
@@ -52,11 +49,10 @@ class UkrFuelCoordinator(DataUpdateCoordinator[dict[str, float | None]]):
 
         priced = sum(value is not None for value in data.values())
         _LOGGER.debug(
-            "Minfin update: %s/%s prices for operators=%s fuels=%s",
+            "Minfin update: %s/%s prices for selection=%s",
             priced,
             len(data),
-            self.selected_operators,
-            self.selected_fuels,
+            self.selection,
         )
         if priced == 0:
             raise UpdateFailed(

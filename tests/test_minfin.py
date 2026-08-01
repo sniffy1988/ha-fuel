@@ -36,15 +36,20 @@ def test_parse_prices(minfin_html: str) -> None:
     """Selected operator/fuel prices should be mapped correctly."""
     data = parse_prices(
         minfin_html,
-        selected_operators=["ukrnafta", "okko", "brent_oil"],
-        selected_fuels=["a95", "diesel", "a95_plus", "a92"],
+        {
+            "ukrnafta": ["a95", "a92"],
+            "okko": ["diesel", "a95_plus"],
+            "brent_oil": ["a95", "a95_plus"],
+        },
     )
     assert data["ukrnafta_a95"] == 79.9
+    assert data["ukrnafta_a92"] == 77.9
     assert data["okko_diesel"] == 92.5
+    assert data["okko_a95_plus"] == 85.9
     assert data["brent_oil_a95"] == 79.95
     assert data["brent_oil_a95_plus"] is None
-    assert data["brent_oil_a92"] == 75.95
-    assert data["okko_a95_plus"] == 85.9
+    assert "okko_a95" not in data
+    assert "socar_a92" not in data
 
 
 def test_parse_operators_missing_table() -> None:
