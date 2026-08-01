@@ -1,1 +1,1 @@
-DOMAIN = "ukr_fuel_prices"
+DOMAIN = "ukr_fuel"
