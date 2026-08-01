@@ -1,6 +1,6 @@
 # Ukrainian Fuel Prices for Home Assistant
 
-[![GitHub Release](https://img.shields.io/github/v/release/YOUR_GITHUB_USERNAME/ha-ukr-fuel-prices?style=flat-square)](https://github.com/YOUR_GITHUB_USERNAME/ha-ukr-fuel-prices/releases)
+[![GitHub Release](https://img.shields.io/github/v/release/sniffy1988/ha-ukr-fuel-prices?style=flat-square)](https://github.com/sniffy1988/ha-ukr-fuel-prices/releases)
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg?style=flat-square)](https://github.com/hacs/integration)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
@@ -22,4 +22,4 @@
 2. Натисніть на три крапки у правому верхньому кутку та виберіть **Користувацькі репозиторії (Custom repositories)**.
 3. Вставте посилання на цей репозиторій:
    ```text
-   [https://github.com/YOUR_GITHUB_USERNAME/ha-ukr-fuel-prices](https://github.com/YOUR_GITHUB_USERNAME/ha-ukr-fuel-prices)
+   [https://github.com/sniffy1988/ha-ukr-fuel-prices](https://github.com/sniffy1988/ha-ukr-fuel-prices)
