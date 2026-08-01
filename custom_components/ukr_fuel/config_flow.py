@@ -127,7 +127,11 @@ class _SelectionFlowMixin:
         return self.async_show_form(
             step_id="fuels",
             data_schema=_fuels_schema(defaults),
-            description_placeholders={"operator": label},
+            description_placeholders={
+                "operator": label,
+                "step_number": str(self._fuel_index + 1),
+                "step_count": str(len(self._selected_operators)),
+            },
         )
 
     async def _async_finish_selection(self) -> config_entries.ConfigFlowResult:

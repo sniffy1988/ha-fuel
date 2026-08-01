@@ -6,5 +6,5 @@
   "documentation": "https://github.com/sniffy1988/ha-fuel",
   "requirements": ["beautifulsoup4"],
   "iot_class": "cloud_polling",
-  "version": "1.2.1"
+  "version": "1.2.2"
 }

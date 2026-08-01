@@ -27,6 +27,8 @@ async def test_user_flow_creates_per_operator_selection(
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "fuels"
     assert result["description_placeholders"]["operator"] == "UKRNAFTA"
+    assert result["description_placeholders"]["step_number"] == "1"
+    assert result["description_placeholders"]["step_count"] == "2"
 
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"],
@@ -35,6 +37,7 @@ async def test_user_flow_creates_per_operator_selection(
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "fuels"
     assert result["description_placeholders"]["operator"] == "SOCAR"
+    assert result["description_placeholders"]["step_number"] == "2"
 
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"],

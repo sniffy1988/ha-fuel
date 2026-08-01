@@ -1,0 +1,45 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Оберіть АЗС",
+        "description": "Спочатку виберіть операторів для Харківської області. Далі для кожної АЗС окремо оберете види палива.",
+        "data": {
+          "operators": "АЗС"
+        }
+      },
+      "fuels": {
+        "title": "{operator}",
+        "description": "Крок {step_number} з {step_count}: оберіть паливо лише для {operator}.",
+        "data": {
+          "fuels": "Паливо для цієї АЗС"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Ukrainian Fuel Prices уже налаштовано.",
+      "no_operators": "Виберіть хоча б одну АЗС."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Оберіть АЗС",
+        "description": "Виберіть операторів для моніторингу. Далі для кожної АЗС окремо оберете види палива.",
+        "data": {
+          "operators": "АЗС"
+        }
+      },
+      "fuels": {
+        "title": "{operator}",
+        "description": "Крок {step_number} з {step_count}: оберіть паливо лише для {operator}.",
+        "data": {
+          "fuels": "Паливо для цієї АЗС"
+        }
+      }
+    },
+    "abort": {
+      "no_operators": "Виберіть хоча б одну АЗС."
+    }
+  }
+}
