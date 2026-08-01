@@ -1,0 +1,9 @@
+{
+  "domain": "ukr_fuel_prices",
+  "name": "Ukrainian Fuel Prices",
+  "codeowners": [],
+  "documentation": "https://github.com/",
+  "iot_class": "cloud_polling",
+  "version": "1.0.0",
+  "requirements": ["beautifulsoup4==4.12.3"]
+}
