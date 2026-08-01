@@ -8,7 +8,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, FUELS, OPERATORS
+from .const import DOMAIN, FUELS, MINFIN_URL, OPERATORS
 from .coordinator import UkrFuelCoordinator
 
 FUEL_ICONS = {
@@ -53,6 +53,7 @@ class FuelSensor(CoordinatorEntity[UkrFuelCoordinator], SensorEntity):
 
     _attr_native_unit_of_measurement = "грн/л"
     _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_attribution = "Дані: Мінфін (Харківська обл.)"
 
     def __init__(
         self,
@@ -65,6 +66,8 @@ class FuelSensor(CoordinatorEntity[UkrFuelCoordinator], SensorEntity):
     ) -> None:
         """Initialize the sensor."""
         super().__init__(coordinator)
+        self._operator = operator
+        self._fuel = fuel
         self._key = f"{operator}_{fuel}"
         self._attr_name = f"{operator_name} {fuel_name}"
         self._attr_icon = icon
@@ -72,14 +75,16 @@ class FuelSensor(CoordinatorEntity[UkrFuelCoordinator], SensorEntity):
 
     @property
     def native_value(self) -> float | None:
-        """Return the current fuel price."""
+        """Return the current fuel price, or None if missing."""
         if self.coordinator.data is None:
             return None
         return self.coordinator.data.get(self._key)
 
     @property
-    def available(self) -> bool:
-        """Return True if the coordinator succeeded and price exists."""
-        if not super().available or self.coordinator.data is None:
-            return False
-        return self.coordinator.data.get(self._key) is not None
+    def extra_state_attributes(self) -> dict[str, str]:
+        """Return diagnostic attributes."""
+        return {
+            "operator": self._operator,
+            "fuel": self._fuel,
+            "source": MINFIN_URL,
+        }

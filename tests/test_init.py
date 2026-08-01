@@ -35,8 +35,11 @@ async def test_setup_creates_sensors(
 
     ukrnafta = hass.states.get(ukrnafta_entity_id)
     assert ukrnafta is not None
+    assert ukrnafta.state not in ("unavailable", "unknown")
     assert float(ukrnafta.state) == 79.9
     assert ukrnafta.attributes["unit_of_measurement"] == "грн/л"
+    assert ukrnafta.attributes["operator"] == "ukrnafta"
+    assert ukrnafta.attributes["fuel"] == "a95"
 
 
 async def test_unload_entry(

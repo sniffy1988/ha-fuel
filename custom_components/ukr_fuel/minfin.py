@@ -19,6 +19,12 @@ USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 )
+REQUEST_HEADERS = {
+    "User-Agent": USER_AGENT,
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "uk-UA,uk;q=0.9,en;q=0.8",
+    "Referer": "https://index.minfin.com.ua/ua/markets/fuel/",
+}
 
 
 class MinfinError(Exception):
@@ -69,8 +75,13 @@ def parse_prices(
     if not table:
         raise MinfinError("Не вдалося знайти таблицю цін")
 
-    selected = set(selected_operators)
-    data: dict[str, float | None] = {}
+    selected = {op.lower() for op in selected_operators}
+    fuels = [fuel.lower() for fuel in selected_fuels]
+    # Always expose every requested sensor key, even when Minfin has no value.
+    data: dict[str, float | None] = {
+        f"{op}_{fuel}": None for op in selected for fuel in fuels
+    }
+
     for row in table.select("tr"):
         link = row.select_one("td a")
         cells = row.select("td")
@@ -95,7 +106,7 @@ def parse_prices(
             "gas": parse_price(cells[6].get_text()) if len(cells) > 6 else None,
         }
 
-        for fuel_key in selected_fuels:
+        for fuel_key in fuels:
             data[f"{op_slug}_{fuel_key}"] = row_fuel_map.get(fuel_key)
 
     return data
@@ -108,7 +119,7 @@ async def async_fetch_minfin_html(hass: HomeAssistant) -> str:
         async with asyncio.timeout(15):
             async with session.get(
                 MINFIN_URL,
-                headers={"User-Agent": USER_AGENT},
+                headers=REQUEST_HEADERS,
             ) as response:
                 if response.status != 200:
                     raise MinfinError(f"Помилка HTTP від Мінфіну: {response.status}")

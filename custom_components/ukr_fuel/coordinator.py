@@ -39,7 +39,7 @@ class UkrFuelCoordinator(DataUpdateCoordinator[dict[str, float | None]]):
         """Fetch and parse prices from Minfin."""
         try:
             html = await minfin.async_fetch_minfin_html(self.hass)
-            return await self.hass.async_add_executor_job(
+            data = await self.hass.async_add_executor_job(
                 minfin.parse_prices,
                 html,
                 self.selected_operators,
@@ -49,3 +49,17 @@ class UkrFuelCoordinator(DataUpdateCoordinator[dict[str, float | None]]):
             raise UpdateFailed(str(err)) from err
         except Exception as err:
             raise UpdateFailed(f"Помилка парсингу: {err}") from err
+
+        priced = sum(value is not None for value in data.values())
+        _LOGGER.debug(
+            "Minfin update: %s/%s prices for operators=%s fuels=%s",
+            priced,
+            len(data),
+            self.selected_operators,
+            self.selected_fuels,
+        )
+        if priced == 0:
+            raise UpdateFailed(
+                "Не знайдено жодної ціни для вибраних АЗС/палива на Мінфіні"
+            )
+        return data
