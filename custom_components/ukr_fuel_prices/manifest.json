@@ -1,9 +1,10 @@
 {
   "domain": "ukr_fuel_prices",
   "name": "Ukrainian Fuel Prices",
-  "codeowners": [],
-  "documentation": "https://github.com/",
+  "codeowners": ["@sniffy1988"],
+  "config_flow": true,
+  "documentation": "https://github.com/sniffy1988/ha-fuel",
+  "requirements": ["beautifulsoup4"],
   "iot_class": "cloud_polling",
-  "version": "1.0.0",
-  "requirements": ["beautifulsoup4==4.12.3"]
+  "version": "1.0.0"
 }
