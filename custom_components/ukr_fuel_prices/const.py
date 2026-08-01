@@ -1,1 +1,0 @@
-DOMAIN = "ukr_fuel"
