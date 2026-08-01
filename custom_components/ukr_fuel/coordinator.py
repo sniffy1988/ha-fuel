@@ -13,7 +13,7 @@ from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-SCAN_INTERVAL = timedelta(hours=4)
+SCAN_INTERVAL = timedelta(hours=1)
 
 
 class UkrFuelCoordinator(DataUpdateCoordinator[dict[str, float | None]]):
