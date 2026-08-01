@@ -1,5 +1,6 @@
 from datetime import timedelta
 import logging
+import re
 from bs4 import BeautifulSoup
 import aiohttp
 
@@ -13,13 +14,16 @@ from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 SCAN_INTERVAL = timedelta(hours=4)
+MINFIN_URL = "https://index.minfin.com.ua/ua/markets/fuel/tm/"
 
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    
+    selected_operators = entry.data.get("operators", ["ukrnafta", "socar"])
+    selected_fuels = entry.data.get("fuels", ["a95", "diesel"])
+
     async def async_update_data():
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -27,32 +31,61 @@ async def async_setup_entry(
         data = {}
         
         async with aiohttp.ClientSession(headers=headers) as session:
-            # Укрнафта
             try:
-                async with session.get("https://www.ukrnafta.com/", timeout=15) as response:
-                    if response.status == 200:
-                        html = await response.text()
-                        soup = BeautifulSoup(html, 'html.parser')
-                        data["ukrnafta_a95"] = 55.50
-                        data["ukrnafta_a92"] = 53.00
-                        data["ukrnafta_diesel"] = 54.00
-            except Exception as err:
-                _LOGGER.warning("Помилка Укрнафти: %s", err)
+                async with session.get(MINFIN_URL, timeout=15) as response:
+                    if response.status != 200:
+                        raise UpdateFailed(f"Помилка HTTP від Мінфіну: {response.status}")
+                    
+                    html = await response.text()
+                    soup = BeautifulSoup(html, 'html.parser')
+                    table = soup.select_one("#tm-table table")
+                    if not table:
+                        raise UpdateFailed("Не вдалося знайти таблицю цін")
+                    
+                    def parse_price(text):
+                        try:
+                            cleaned = text.replace(u'\xa0', u' ').strip().replace(" ", "").replace(",", ".")
+                            match = re.search(r'\d+\.\d+|\d+', cleaned)
+                            if match:
+                                return float(match.group())
+                        except Exception:
+                            pass
+                        return None
 
-            # SOCAR
-            try:
-                async with session.get("https://socar.com.ua/", timeout=15) as response:
-                    if response.status == 200:
-                        html = await response.text()
-                        soup = BeautifulSoup(html, 'html.parser')
-                        data["socar_a95"] = 58.99
-                        data["socar_a92"] = 56.49
-                        data["socar_diesel"] = 57.99
-            except Exception as err:
-                _LOGGER.warning("Помилка SOCAR: %s", err)
+                    rows = table.select("tr")
+                    for row in rows:
+                        link = row.select_one("td a")
+                        cells = row.select("td")
+                        if not cells or len(cells) < 6:
+                            continue
+                        
+                        # Визначаємо ідентифікатор оператора з посилання (наприклад, /ua/markets/fuel/tm/ukrnafta/ -> ukrnafta)
+                        op_slug = ""
+                        if link and link.get("href"):
+                            match_slug = re.search(r'/tm/([^/]+)/', link.get("href"))
+                            if match_slug:
+                                op_slug = match_slug.group(1).lower()
+                        
+                        if not op_slug:
+                            continue
 
-        if not data:
-            raise UpdateFailed("Не вдалося отримати ціни ні з одного джерела")
+                        # Якщо оператор обраний користувачем для моніторингу
+                        if op_slug in selected_operators:
+                            # Мапінг колонок таблиці Мінфіну:
+                            # [2] А-95+, [3] А-95, [4] А-92, [5] ДП, [6] Газ
+                            row_fuel_map = {
+                                "a95_plus": parse_price(cells[2].get_text()) if len(cells) > 2 else None,
+                                "a95": parse_price(cells[3].get_text()) if len(cells) > 3 else None,
+                                "a92": parse_price(cells[4].get_text()) if len(cells) > 4 else None,
+                                "diesel": parse_price(cells[5].get_text()) if len(cells) > 5 else None,
+                                "gas": parse_price(cells[6].get_text()) if len(cells) > 6 else None,
+                            }
+
+                            for fuel_key in selected_fuels:
+                                data[f"{op_slug}_{fuel_key}"] = row_fuel_map.get(fuel_key)
+
+            except Exception as err:
+                raise UpdateFailed(f"Помилка парсингу: {err}")
 
         return data
 
@@ -66,14 +99,29 @@ async def async_setup_entry(
 
     await coordinator.async_config_entry_first_refresh()
 
-    sensors = [
-        FuelSensor(coordinator, "Укрнафта А-95", "ukrnafta_a95", "mdi:gas-station"),
-        FuelSensor(coordinator, "Укрнафта А-92", "ukrnafta_a92", "mdi:gas-station"),
-        FuelSensor(coordinator, "Укрнафта ДП", "ukrnafta_diesel", "mdi:fuel"),
-        FuelSensor(coordinator, "SOCAR А-95", "socar_a95", "mdi:gas-station"),
-        FuelSensor(coordinator, "SOCAR А-92", "socar_a92", "mdi:gas-station"),
-        FuelSensor(coordinator, "SOCAR ДП", "socar_diesel", "mdi:fuel"),
-    ]
+    fuel_meta = {
+        "a95_plus": ("А-95+", "mdi:gas-station"),
+        "a95": ("А-95", "mdi:gas-station"),
+        "a92": ("А-92", "mdi:gas-station"),
+        "diesel": ("ДП", "mdi:fuel"),
+        "gas": ("Газ", "mdi:propane-tank"),
+    }
+
+    sensors = []
+    for op in selected_operators:
+        # Робимо красиву назву бренду з великої літери
+        op_formatted_name = op.replace("_", " ").title()
+        for fuel in selected_fuels:
+            if fuel in fuel_meta:
+                f_name, f_icon = fuel_meta[fuel]
+                sensors.append(
+                    FuelSensor(
+                        coordinator, 
+                        f"{op_formatted_name} {f_name}", 
+                        f"{op}_{fuel}", 
+                        f_icon
+                    )
+                )
 
     async_add_entities(sensors)
 
@@ -93,7 +141,7 @@ class FuelSensor(SensorEntity):
 
     @property
     def available(self) -> bool:
-        return self.coordinator.last_update_success and self._key in self.coordinator.data
+        return self.coordinator.last_update_success and self._key in self.coordinator.data and self.coordinator.data.get(self._key) is not None
 
     async def async_added_to_hass(self) -> None:
         self.async_on_remove(
