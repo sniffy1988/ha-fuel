@@ -26,11 +26,13 @@ REQUEST_HEADERS = {
     "Referer": "https://socar.ua/",
 }
 
-# Specific SOCAR titles from https://socar.ua/fuel
+# All products from https://socar.ua/fuel (most specific patterns first).
 _TITLE_RULES: list[tuple[re.Pattern[str], str]] = [
-    (re.compile(r"diesel\s*nano\s*extro", re.I), "diesel_plus"),  # ДП+
-    (re.compile(r"nano\s*дп|nano\s*dp", re.I), "diesel"),  # NANO ДП
-    (re.compile(r"nano\s*95", re.I), "a95_plus"),  # NANO 95 ~ А-95+
+    (re.compile(r"diesel\s*nano\s*extro", re.I), "diesel_plus"),
+    (re.compile(r"nano\s*дп|nano\s*dp", re.I), "nano_diesel"),
+    (re.compile(r"nano\s*100", re.I), "nano_100"),
+    (re.compile(r"nano\s*95", re.I), "nano_95"),
+    (re.compile(r"ad\s*blue|adblue", re.I), "adblue"),
     (re.compile(r"бензин\s*а[-\s]?95|а[-\s]?95\b", re.I), "a95"),
     (re.compile(r"\blpg\b", re.I), "gas"),
 ]
@@ -55,8 +57,6 @@ def parse_price(text: str) -> float | None:
 def title_to_fuel(title: str) -> str | None:
     """Map a SOCAR product title to a fuel key."""
     cleaned = " ".join(title.split())
-    if re.search(r"adblue|nano\s*100", cleaned, re.I):
-        return None
     for pattern, fuel in _TITLE_RULES:
         if pattern.search(cleaned):
             return fuel

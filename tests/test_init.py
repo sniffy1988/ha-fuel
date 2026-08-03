@@ -89,13 +89,21 @@ async def test_setup_socar_uses_official_prices(
     mock_minfin_html,
     mock_socar_html,
 ) -> None:
-    """SOCAR sensors should use socar.ua prices including ДП+."""
+    """SOCAR sensors should use socar.ua prices including all catalog fuels."""
     entry = MockConfigEntry(
         domain=DOMAIN,
         title="Ціни на пальне (Харків)",
         data={
             "selection": {
-                "socar": ["a95", "diesel", "diesel_plus", "gas"],
+                "socar": [
+                    "nano_100",
+                    "diesel_plus",
+                    "nano_diesel",
+                    "nano_95",
+                    "a95",
+                    "gas",
+                    "adblue",
+                ],
             }
         },
         version=2,
@@ -107,14 +115,20 @@ async def test_setup_socar_uses_official_prices(
     await hass.async_block_till_done()
 
     registry = er.async_get(hass)
+    expected = {
+        "fuel_price_socar_nano_100": 95.4,
+        "fuel_price_socar_diesel_plus": 97.9,
+        "fuel_price_socar_nano_diesel": 94.9,
+        "fuel_price_socar_nano_95": 88.4,
+        "fuel_price_socar_a95": 85.4,
+        "fuel_price_socar_gas": 43.9,
+        "fuel_price_socar_adblue": 49.0,
+    }
+    for unique_id, price in expected.items():
+        entity_id = registry.async_get_entity_id("sensor", DOMAIN, unique_id)
+        assert entity_id is not None
+        assert float(hass.states.get(entity_id).state) == price
     a95_id = registry.async_get_entity_id("sensor", DOMAIN, "fuel_price_socar_a95")
-    diesel_plus_id = registry.async_get_entity_id(
-        "sensor", DOMAIN, "fuel_price_socar_diesel_plus"
-    )
-    assert a95_id is not None
-    assert diesel_plus_id is not None
-    assert float(hass.states.get(a95_id).state) == 85.4
-    assert float(hass.states.get(diesel_plus_id).state) == 97.9
     assert hass.states.get(a95_id).attributes["source"] == "https://socar.ua/fuel"
 
 

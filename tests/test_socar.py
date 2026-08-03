@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from custom_components.ukr_fuel.const import SOCAR_FUELS
 from custom_components.ukr_fuel.socar import parse_price, parse_prices, title_to_fuel
 
 SOCAR_HTML = """
@@ -45,24 +46,25 @@ def test_parse_price() -> None:
 
 
 def test_title_to_fuel_mapping() -> None:
-    """Titles should map to stable fuel keys."""
+    """Every product title from socar.ua/fuel should map to a fuel key."""
+    assert title_to_fuel("NANO 100") == "nano_100"
     assert title_to_fuel("DIESEL NANO Extro") == "diesel_plus"
-    assert title_to_fuel("NANO ДП") == "diesel"
-    assert title_to_fuel("NANO 95") == "a95_plus"
+    assert title_to_fuel("NANO ДП") == "nano_diesel"
+    assert title_to_fuel("NANO 95") == "nano_95"
     assert title_to_fuel("Бензин А-95") == "a95"
     assert title_to_fuel("LPG") == "gas"
-    assert title_to_fuel("NANO 100") is None
-    assert title_to_fuel("AdBlue") is None
+    assert title_to_fuel("AdBlue") == "adblue"
 
 
-def test_parse_prices() -> None:
-    """Selected fuels should resolve from SOCAR blocks."""
-    data = parse_prices(
-        SOCAR_HTML,
-        ["a95_plus", "a95", "diesel", "diesel_plus", "gas"],
-    )
-    assert data["diesel_plus"] == 97.9
-    assert data["diesel"] == 94.9
-    assert data["a95_plus"] == 88.4
-    assert data["a95"] == 85.4
-    assert data["gas"] == 43.9
+def test_parse_prices_all_socar_fuels() -> None:
+    """All SOCAR fuels should resolve from page blocks."""
+    data = parse_prices(SOCAR_HTML, SOCAR_FUELS)
+    assert data == {
+        "nano_100": 95.4,
+        "diesel_plus": 97.9,
+        "nano_diesel": 94.9,
+        "nano_95": 88.4,
+        "a95": 85.4,
+        "gas": 43.9,
+        "adblue": 49.0,
+    }

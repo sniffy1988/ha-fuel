@@ -9,7 +9,15 @@ from homeassistant.core import callback
 from homeassistant.helpers import selector
 import voluptuous as vol
 
-from .const import DEFAULT_FUELS, DEFAULT_OPERATORS, DOMAIN, FUELS, OPERATORS
+from .const import (
+    DEFAULT_FUELS,
+    DEFAULT_OPERATORS,
+    DOMAIN,
+    FUELS,
+    OPERATORS,
+    SOCAR_FUELS,
+    SOCAR_OPERATOR,
+)
 from .minfin import async_get_operators
 from .selection import default_selection, normalize_selection, resolve_selection
 
@@ -18,6 +26,17 @@ def _filter_defaults(defaults: list[str], available: dict[str, str]) -> list[str
     """Keep defaults that exist in the available options."""
     filtered = [item for item in defaults if item in available]
     return filtered or list(available)[:5]
+
+
+def _fuel_choices_for_operator(operator: str) -> dict[str, str]:
+    """Return fuel options tailored to the operator."""
+    if operator == SOCAR_OPERATOR:
+        # SOCAR page products first, then remaining shared labels.
+        ordered = list(SOCAR_FUELS) + [
+            key for key in FUELS if key not in SOCAR_FUELS
+        ]
+        return {key: FUELS[key] for key in ordered if key in FUELS}
+    return dict(FUELS)
 
 
 def _operators_schema(
@@ -44,17 +63,20 @@ def _operators_schema(
     )
 
 
-def _fuels_schema(default_fuels: list[str]) -> vol.Schema:
+def _fuels_schema(
+    default_fuels: list[str], fuel_choices: dict[str, str]
+) -> vol.Schema:
     """Build fuel multi-select schema for one operator."""
     return vol.Schema(
         {
             vol.Required(
                 "fuels",
-                default=_filter_defaults(default_fuels, FUELS),
+                default=_filter_defaults(default_fuels, fuel_choices),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=[
-                        {"value": key, "label": label} for key, label in FUELS.items()
+                        {"value": key, "label": label}
+                        for key, label in fuel_choices.items()
                     ],
                     multiple=True,
                     mode=selector.SelectSelectorMode.DROPDOWN,
@@ -120,13 +142,18 @@ class _SelectionFlowMixin:
                 return await self.async_step_fuels()
             return await self._async_finish_selection()
 
-        defaults = self._current_defaults.get(current, DEFAULT_FUELS)
+        defaults = self._current_defaults.get(current)
+        if defaults is None:
+            defaults = (
+                list(SOCAR_FUELS) if current == SOCAR_OPERATOR else list(DEFAULT_FUELS)
+            )
+        fuel_choices = _fuel_choices_for_operator(current)
         label = self._operator_labels.get(
             current, OPERATORS.get(current, current.replace("_", " ").title())
         )
         return self.async_show_form(
             step_id="fuels",
-            data_schema=_fuels_schema(defaults),
+            data_schema=_fuels_schema(defaults, fuel_choices),
             description_placeholders={
                 "operator": label,
                 "step_number": str(self._fuel_index + 1),

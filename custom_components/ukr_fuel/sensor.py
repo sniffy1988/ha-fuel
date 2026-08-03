@@ -18,7 +18,11 @@ FUEL_ICONS = {
     "a92": "mdi:gas-station",
     "diesel": "mdi:fuel",
     "diesel_plus": "mdi:fuel",
+    "nano_100": "mdi:gas-station",
+    "nano_95": "mdi:gas-station",
+    "nano_diesel": "mdi:fuel",
     "gas": "mdi:propane-tank",
+    "adblue": "mdi:water",
 }
 
 

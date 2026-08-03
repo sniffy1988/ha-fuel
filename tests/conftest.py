@@ -39,8 +39,12 @@ def mock_minfin_html(minfin_html: str):
 
 @pytest.fixture
 def mock_socar_html():
-    """Patch SOCAR HTML fetch."""
+    """Patch SOCAR HTML fetch with full product list."""
     html = """
+    <div class="two-image-and-content">
+      <h2 class="two-image-and-content__title">NANO 100</h2>
+      <p class="two-image-and-content__price">*Ціна: 95.4 грн/л</p>
+    </div>
     <div class="two-image-and-content">
       <h2 class="two-image-and-content__title">DIESEL NANO Extro</h2>
       <p class="two-image-and-content__price">*Ціна: 97.9 грн/л</p>
@@ -60,6 +64,10 @@ def mock_socar_html():
     <div class="two-image-and-content">
       <h2 class="two-image-and-content__title">LPG</h2>
       <p class="two-image-and-content__price">*Ціна: 43.9 грн/л</p>
+    </div>
+    <div class="two-image-and-content">
+      <h2 class="two-image-and-content__title">AdBlue</h2>
+      <p class="two-image-and-content__price">*Ціна: 49 грн/л</p>
     </div>
     """
     with patch(

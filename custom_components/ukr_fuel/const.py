@@ -2,6 +2,7 @@
 
 DOMAIN = "ukr_fuel"
 
+# Minfin region fuels + full SOCAR catalog from https://socar.ua/fuel
 FUELS = {
     "a95_plus": "А-95+",
     "a95": "А-95",
@@ -9,7 +10,22 @@ FUELS = {
     "diesel": "ДП",
     "diesel_plus": "ДП+",
     "gas": "Газ",
+    "nano_100": "NANO 100",
+    "nano_95": "NANO 95",
+    "nano_diesel": "NANO ДП",
+    "adblue": "AdBlue",
 }
+
+# Fuels listed on SOCAR's official fuel page (all selectable for SOCAR).
+SOCAR_FUELS = [
+    "nano_100",
+    "diesel_plus",
+    "nano_diesel",
+    "nano_95",
+    "a95",
+    "gas",
+    "adblue",
+]
 
 # Fallback list for Харківська обл. (used when Minfin is unreachable).
 OPERATORS = {
