@@ -14,6 +14,7 @@ async def test_setup_creates_sensors(
     hass: HomeAssistant,
     mock_config_entry: MockConfigEntry,
     mock_minfin_html,
+    mock_socar_html,
 ) -> None:
     """Setup should create sensors for legacy cartesian config."""
     mock_config_entry.add_to_hass(hass)
@@ -45,6 +46,7 @@ async def test_setup_creates_sensors(
 async def test_setup_respects_per_operator_selection(
     hass: HomeAssistant,
     mock_minfin_html,
+    mock_socar_html,
 ) -> None:
     """Only selected fuels per operator should create sensors."""
     entry = MockConfigEntry(
@@ -82,10 +84,45 @@ async def test_setup_respects_per_operator_selection(
     )
 
 
+async def test_setup_socar_uses_official_prices(
+    hass: HomeAssistant,
+    mock_minfin_html,
+    mock_socar_html,
+) -> None:
+    """SOCAR sensors should use socar.ua prices including ДП+."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Ціни на пальне (Харків)",
+        data={
+            "selection": {
+                "socar": ["a95", "diesel", "diesel_plus", "gas"],
+            }
+        },
+        version=2,
+        unique_id=DOMAIN,
+    )
+    entry.add_to_hass(hass)
+
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    registry = er.async_get(hass)
+    a95_id = registry.async_get_entity_id("sensor", DOMAIN, "fuel_price_socar_a95")
+    diesel_plus_id = registry.async_get_entity_id(
+        "sensor", DOMAIN, "fuel_price_socar_diesel_plus"
+    )
+    assert a95_id is not None
+    assert diesel_plus_id is not None
+    assert float(hass.states.get(a95_id).state) == 85.4
+    assert float(hass.states.get(diesel_plus_id).state) == 97.9
+    assert hass.states.get(a95_id).attributes["source"] == "https://socar.ua/fuel"
+
+
 async def test_unload_entry(
     hass: HomeAssistant,
     mock_config_entry: MockConfigEntry,
     mock_minfin_html,
+    mock_socar_html,
 ) -> None:
     """Config entry should unload cleanly."""
     mock_config_entry.add_to_hass(hass)

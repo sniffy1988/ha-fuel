@@ -7,6 +7,7 @@ FUELS = {
     "a95": "А-95",
     "a92": "А-92",
     "diesel": "ДП",
+    "diesel_plus": "ДП+",
     "gas": "Газ",
 }
 
@@ -31,3 +32,5 @@ DEFAULT_OPERATORS = ["ukrnafta", "socar", "okko", "wog", "upg"]
 DEFAULT_FUELS = ["a95", "diesel", "gas"]
 
 MINFIN_URL = "https://index.minfin.com.ua/ua/markets/fuel/reg/harkovskaya/"
+SOCAR_URL = "https://socar.ua/fuel"
+SOCAR_OPERATOR = "socar"

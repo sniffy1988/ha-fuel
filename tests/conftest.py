@@ -38,6 +38,38 @@ def mock_minfin_html(minfin_html: str):
 
 
 @pytest.fixture
+def mock_socar_html():
+    """Patch SOCAR HTML fetch."""
+    html = """
+    <div class="two-image-and-content">
+      <h2 class="two-image-and-content__title">DIESEL NANO Extro</h2>
+      <p class="two-image-and-content__price">*Ціна: 97.9 грн/л</p>
+    </div>
+    <div class="two-image-and-content">
+      <h2 class="two-image-and-content__title">NANO ДП</h2>
+      <p class="two-image-and-content__price">*Ціна: 94.9 грн/л</p>
+    </div>
+    <div class="two-image-and-content">
+      <h2 class="two-image-and-content__title">NANO 95</h2>
+      <p class="two-image-and-content__price">*Ціна: 88.4 грн/л</p>
+    </div>
+    <div class="two-image-and-content">
+      <h2 class="two-image-and-content__title">Бензин А-95</h2>
+      <p class="two-image-and-content__price">*Ціна: 85.4 грн/л</p>
+    </div>
+    <div class="two-image-and-content">
+      <h2 class="two-image-and-content__title">LPG</h2>
+      <p class="two-image-and-content__price">*Ціна: 43.9 грн/л</p>
+    </div>
+    """
+    with patch(
+        "custom_components.ukr_fuel.socar.async_fetch_socar_html",
+        new=AsyncMock(return_value=html),
+    ) as mock_fetch:
+        yield mock_fetch
+
+
+@pytest.fixture
 def mock_config_entry() -> MockConfigEntry:
     """Return a mock config entry."""
     return MockConfigEntry(

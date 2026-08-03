@@ -8,7 +8,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, FUELS, MINFIN_URL, OPERATORS
+from .const import DOMAIN, FUELS, MINFIN_URL, OPERATORS, SOCAR_OPERATOR, SOCAR_URL
 from .coordinator import UkrFuelCoordinator
 from .selection import selection_pairs
 
@@ -17,6 +17,7 @@ FUEL_ICONS = {
     "a95": "mdi:gas-station",
     "a92": "mdi:gas-station",
     "diesel": "mdi:fuel",
+    "diesel_plus": "mdi:fuel",
     "gas": "mdi:propane-tank",
 }
 
@@ -49,7 +50,6 @@ class FuelSensor(CoordinatorEntity[UkrFuelCoordinator], SensorEntity):
 
     _attr_native_unit_of_measurement = "грн/л"
     _attr_state_class = SensorStateClass.MEASUREMENT
-    _attr_attribution = "Дані: Мінфін (Харківська обл.)"
 
     def __init__(
         self,
@@ -68,6 +68,12 @@ class FuelSensor(CoordinatorEntity[UkrFuelCoordinator], SensorEntity):
         self._attr_name = f"{operator_name} {fuel_name}"
         self._attr_icon = icon
         self._attr_unique_id = f"fuel_price_{self._key}"
+        if operator == SOCAR_OPERATOR:
+            self._attr_attribution = "Дані: SOCAR Energy Ukraine"
+            self._source = SOCAR_URL
+        else:
+            self._attr_attribution = "Дані: Мінфін (Харківська обл.)"
+            self._source = MINFIN_URL
 
     @property
     def native_value(self) -> float | None:
@@ -82,5 +88,5 @@ class FuelSensor(CoordinatorEntity[UkrFuelCoordinator], SensorEntity):
         return {
             "operator": self._operator,
             "fuel": self._fuel,
-            "source": MINFIN_URL,
+            "source": self._source,
         }
