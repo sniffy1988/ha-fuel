@@ -37,6 +37,12 @@ _TITLE_RULES: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"\blpg\b", re.I), "gas"),
 ]
 
+# Keep older Minfin-style keys working for existing SOCAR selections.
+_ALIASES: dict[str, tuple[str, ...]] = {
+    "nano_diesel": ("diesel",),
+    "nano_95": ("a95_plus",),
+}
+
 
 class SocarError(Exception):
     """Raised when SOCAR data cannot be fetched or parsed."""
@@ -87,8 +93,10 @@ def parse_prices(html: str, selected_fuels: list[str]) -> dict[str, float | None
             continue
 
         found_any = True
-        if fuel_key in data and data[fuel_key] is None:
-            data[fuel_key] = price
+        keys = (fuel_key, *_ALIASES.get(fuel_key, ()))
+        for key in keys:
+            if key in data and data[key] is None:
+                data[key] = price
 
     if not found_any:
         raise SocarError("Не вдалося розпарсити ціни SOCAR")

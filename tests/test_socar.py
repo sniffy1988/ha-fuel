@@ -68,3 +68,11 @@ def test_parse_prices_all_socar_fuels() -> None:
         "gas": 43.9,
         "adblue": 49.0,
     }
+
+
+def test_parse_prices_legacy_aliases() -> None:
+    """Legacy diesel / A-95+ keys still resolve for older configs."""
+    data = parse_prices(SOCAR_HTML, ["diesel", "a95_plus", "gas"])
+    assert data["diesel"] == 94.9
+    assert data["a95_plus"] == 88.4
+    assert data["gas"] == 43.9

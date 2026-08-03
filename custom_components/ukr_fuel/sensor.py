@@ -5,6 +5,7 @@ from __future__ import annotations
 from homeassistant.components.sensor import SensorEntity, SensorStateClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -26,6 +27,14 @@ FUEL_ICONS = {
 }
 
 
+def _active_unique_ids(selection: dict[str, list[str]]) -> set[str]:
+    """Return unique IDs for currently configured sensors."""
+    return {
+        f"fuel_price_{operator}_{fuel}"
+        for operator, fuel in selection_pairs(selection)
+    }
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
@@ -33,6 +42,13 @@ async def async_setup_entry(
 ) -> None:
     """Set up Ukrainian Fuel Prices sensors from a config entry."""
     coordinator: UkrFuelCoordinator = hass.data[DOMAIN][entry.entry_id]
+    active_ids = _active_unique_ids(coordinator.selection)
+
+    # Drop orphaned registry rows left after reconfigure / fuel key renames.
+    registry = er.async_get(hass)
+    for entity_entry in er.async_entries_for_config_entry(registry, entry.entry_id):
+        if entity_entry.unique_id not in active_ids:
+            registry.async_remove(entity_entry.entity_id)
 
     sensors = [
         FuelSensor(
@@ -52,6 +68,7 @@ async def async_setup_entry(
 class FuelSensor(CoordinatorEntity[UkrFuelCoordinator], SensorEntity):
     """Representation of a fuel price sensor."""
 
+    _attr_has_entity_name = False
     _attr_native_unit_of_measurement = "грн/л"
     _attr_state_class = SensorStateClass.MEASUREMENT
 
