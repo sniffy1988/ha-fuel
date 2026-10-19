@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Choose gas stations",
-        "description": "Select operators for Kharkiv region. Next you will choose fuels for each station separately.",
+        "description": "Select operators. Next you will choose fuels for each station separately.",
         "data": {
           "operators": "Gas stations"
         }

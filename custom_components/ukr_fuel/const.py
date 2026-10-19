@@ -27,7 +27,7 @@ SOCAR_FUELS = [
     "adblue",
 ]
 
-# Fallback list for Харківська обл. (used when Minfin is unreachable).
+# Fallback list for national operators (used when Minfin is unreachable).
 OPERATORS = {
     "amic": "AMIC",
     "brent_oil": "Brent Oil",
@@ -47,6 +47,7 @@ OPERATORS = {
 DEFAULT_OPERATORS = ["ukrnafta", "socar", "okko", "wog", "upg"]
 DEFAULT_FUELS = ["a95", "diesel", "gas"]
 
-MINFIN_URL = "https://index.minfin.com.ua/ua/markets/fuel/reg/harkovskaya/"
+# National operator table (regional /reg/... pages no longer expose #tm-table).
+MINFIN_URL = "https://index.minfin.com.ua/ua/markets/fuel/tm/"
 SOCAR_URL = "https://socar.ua/fuel"
 SOCAR_OPERATOR = "socar"

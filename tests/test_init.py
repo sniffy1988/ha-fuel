@@ -51,7 +51,7 @@ async def test_setup_respects_per_operator_selection(
     """Only selected fuels per operator should create sensors."""
     entry = MockConfigEntry(
         domain=DOMAIN,
-        title="Ціни на пальне (Харків)",
+        title="Ціни на пальне",
         data={
             "selection": {
                 "ukrnafta": ["a92"],
@@ -92,7 +92,7 @@ async def test_setup_socar_uses_official_prices(
     """SOCAR sensors should use socar.ua prices including all catalog fuels."""
     entry = MockConfigEntry(
         domain=DOMAIN,
-        title="Ціни на пальне (Харків)",
+        title="Ціни на пальне",
         data={
             "selection": {
                 "socar": [

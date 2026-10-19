@@ -44,7 +44,7 @@ async def test_user_flow_creates_per_operator_selection(
         {"fuels": ["a95", "diesel"]},
     )
     assert result["type"] is FlowResultType.CREATE_ENTRY
-    assert result["title"] == "Ціни на пальне (Харків)"
+    assert result["title"] == "Ціни на пальне"
     assert result["data"] == {
         "selection": {
             "ukrnafta": ["a92", "a95"],

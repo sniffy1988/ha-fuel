@@ -93,7 +93,7 @@ class FuelSensor(CoordinatorEntity[UkrFuelCoordinator], SensorEntity):
             self._attr_attribution = "Дані: SOCAR Energy Ukraine"
             self._source = SOCAR_URL
         else:
-            self._attr_attribution = "Дані: Мінфін (Харківська обл.)"
+            self._attr_attribution = "Дані: Мінфін (оператори)"
             self._source = MINFIN_URL
 
     @property

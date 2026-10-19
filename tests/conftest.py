@@ -83,7 +83,7 @@ def mock_config_entry() -> MockConfigEntry:
     """Return a mock config entry."""
     return MockConfigEntry(
         domain=DOMAIN,
-        title="Ціни на пальне (Харків)",
+        title="Ціни на пальне",
         data={
             "operators": ["ukrnafta", "okko"],
             "fuels": ["a95", "diesel"],

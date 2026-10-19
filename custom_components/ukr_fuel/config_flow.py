@@ -193,7 +193,7 @@ class UkrFuelConfigFlow(_SelectionFlowMixin, config_entries.ConfigFlow, domain=D
     ) -> config_entries.ConfigFlowResult:
         """Create the config entry."""
         return self.async_create_entry(
-            title="Ціни на пальне (Харків)",
+            title="Ціни на пальне",
             data={"selection": selection},
         )
 
